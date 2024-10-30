@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Livros Online</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+            transition: background-color 0.5s, color 0.5s;
+        }
+        h1 {
+            text-align: center;
+            margin: 20px 0;
+            color: #343a40;
+        }
+        .dark-mode {
+            background-color: #343a40;
+            color: white;
+        }
+        .card {
+            margin: 15px;
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .form-control, .btn {
+            margin-bottom: 15px;
+        }
+        #book-list {
+            margin-top: 30px;
+        }
+        .stars {
+            display: flex;
+            cursor: pointer;
+        }
+        .star {
+            font-size: 24px;
+            color: lightgray;
+            transition: color 0.2s;
+        }
+        .star:hover,
+        .star.selected {
+            color: gold;
+        }
+        .rainbow-margin {
+            height: 10px;
+            background: linear-gradient(270deg, #ff7e5f, #feb47b, #ff7e5f, #feb47b);
+            animation: move 5s linear infinite;
+        }
+        @keyframes move {
+            0% { background-position: 0%; }
+            100% { background-position: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="rainbow-margin"></div>
+    
+    <div class="container">
+        <h1>Catálogo de Livros Online</h1>
+
+        <div class="mb-3">
+            <input type="text" id="search" class="form-control" placeholder="Buscar livros...">
+        </div>
+
+        <button id="toggleMode" class="btn btn-secondary">Modo Escuro</button>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Adicionar Livro</h5>
+                <input type="text" id="title" class="form-control" placeholder="Título">
+                <input type="text" id="author" class="form-control" placeholder="Autor">
+                <input type="text" id="genre" class="form-control" placeholder="Gênero">
+                <input type="number" id="year" class="form-control" placeholder="Ano de Publicação">
+                <div class="stars" id="rating">
+                    <span class="star" data-value="1">★</span>
+                    <span class="star" data-value="2">★</span>
+                    <span class="star" data-value="3">★</span>
+                    <span class="star" data-value="4">★</span>
+                    <span class="star" data-value="5">★</span>
+                </div>
+                <button id="addBook" class="btn btn-primary">Adicionar Livro</button>
+            </div>
+        </div>
+
+        <div id="book-list"></div>
+    </div>
+
+    <script>
+        let books = [];
+        let selectedRating = 0;
+
+        document.getElementById('addBook').addEventListener('click', addBook);
+        document.getElementById('search').addEventListener('input', searchBooks);
+        document.getElementById('toggleMode').addEventListener('click', toggleDarkMode);
+
+        document.querySelectorAll('.star').forEach(star => {
+            star.addEventListener('click', function() {
+                selectedRating = this.getAttribute('data-value');
+                updateStars();
+            });
+        });
+
+        function addBook() {
+            const title = document.getElementById('title').value;
+            const author = document.getElementById('author').value;
+            const genre = document.getElementById('genre').value;
+            const year = document.getElementById('year').value;
+
+            if (title && author && genre && year && selectedRating) {
+                const book = {
+                    title,
+                    author,
+                    genre,
+                    year,
+                    rating: parseInt(selectedRating)
+                };
+                books.push(book);
+                displayBooks();
+                clearInputs();
+            } else {
+                alert('Por favor, preencha todos os campos!');
+            }
+        }
+
+        function displayBooks() {
+            const bookList = document.getElementById('book-list');
+            bookList.innerHTML = '';
+            books.forEach((book, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-body">
+                        <h5 class="card-title">${book.title}</h5>
+                        <p class="card-text">Autor: ${book.author}</p>
+                        <p class="card-text">Gênero: ${book.genre}</p>
+                        <p class="card-text">Ano: ${book.year}</p>
+                        <p class="card-text">Avaliação: ${'★'.repeat(book.rating)}${'☆'.repeat(5 - book.rating)}</p>
+                        <button class="btn btn-danger" onclick="removeBook(${index})">Remover</button>
+                    </div>
+                `;
+                bookList.appendChild(card);
+            });
+        }
+
+        function searchBooks() {
+            const query = document.getElementById('search').value.toLowerCase();
+            const filteredBooks = books.filter(book => 
+                book.title.toLowerCase().includes(query) || 
+                book.author.toLowerCase().includes(query) || 
+                book.genre.toLowerCase().includes(query
+            ));
+            displayFilteredBooks(filteredBooks);
+        }
+
+        function displayFilteredBooks(filteredBooks) {
+            const bookList = document.getElementById('book-list');
+            bookList.innerHTML = '';
+            filteredBooks.forEach((book, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-body">
+                        <h5 class="card-title">${book.title}</h5>
+                        <p class="card-text">Autor: ${book.author}</p>
+                        <p class="card-text">Gênero: ${book.genre}</p>
+                        <p class="card-text">Ano: ${book.year}</p>
+                        <p class="card-text">Avaliação: ${'★'.repeat(book.rating)}${'☆'.repeat(5 - book.rating)}</p>
+                        <button class="btn btn-danger" onclick="removeBook(${index})">Remover</button>
+                    </div>
+                `;
+                bookList.appendChild(card);
+            });
+        }
+
+        function removeBook(index) {
+            books.splice(index, 1);
+            displayBooks();
+        }
+
+        function clearInputs() {
+            document.getElementById('title').value = '';
+            document.getElementById('author').value = '';
+            document.getElementById('genre').value = '';
+            document.getElementById('year').value = '';
+            selectedRating = 0;
+            updateStars();
+        }
+
+        function updateStars() {
+            document.querySelectorAll('.star').forEach(star => {
+                if (star.getAttribute('data-value') <= selectedRating) {
+                    star.classList.add('selected');
+                } else {
+                    star.classList.remove('selected');
+                }
+            });
+        }
+
+        function toggleDarkMode() {
+            const body = document.body;
+            body.classList.toggle('dark-mode');
+            const button = document.getElementById('toggleMode');
+            button.innerText = body.classList.contains('dark-mode') ? 'Modo Claro' : 'Modo Escuro';
+        }
+    </script>
+</body>
+</html>
